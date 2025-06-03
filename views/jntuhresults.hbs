@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Results</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        table{
+            width: 100%;
+        }
+        
+    </style>
+</head>
+<body>
+<div class="container mt-5">
+    <center>
+    <!-- Display student details -->
+    <h2 class="mb-4">Student Details</h2>
+    <table class="table table-dark  w-100">
+        <thead class="thead-dark">
+            <tr>
+                <th>NAME</th>
+                <th>ROLL NO</th>
+                <th>College Code</th>
+                <th>Father's Name</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>{{ results.Details.NAME }}</td>
+            <td>{{ results.Details.Roll_No }}</td>
+            <td>{{ results.Details.COLLEGE_CODE }}</td>
+            <td>{{ results.Details.FATHER_NAME }}</td>
+        </tr>
+        </tbody>
+    </table>
+    </center>
+
+    <!-- Display semester-wise results -->
+    {{#each results.Results}}
+        {{#unless (eq @key "Total")}}
+            <center><h2 class="mt-4">Semester: {{ @key }}</h2></center>
+            <table class="table table-dark w-100 table-striped">
+                <thead class="thead-dark">
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th>Internal</th>
+                        <th>External</th>
+                        <th>Total</th>
+                        <th>Grade</th>
+                        <th>Credits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each this}}
+                    {{#if this.subject_code}}
+                        
+                        <tr>
+                            <td>{{ this.subject_code }}</td>
+                            <td>{{ this.subject_name }}</td>
+                            <td>{{ this.subject_internal }}</td>
+                            <td>{{ this.subject_external }}</td>
+                            <td>{{ this.subject_total }}</td>
+                            {{#if (isFail this.subject_grade)}}
+                                <td style="color: red;">{{ this.subject_grade }}</td>
+                            {{else}}
+                                <td>{{ this.subject_grade }}</td>
+                            {{/if}}
+                            <td>{{ this.subject_credits }}</td>
+                        </tr>
+                        {{/if}}
+                    {{/each}}
+                    <tr>
+                        <th>SGPA</th>
+                        <th>BACKLOGS</th>
+                        <th>TOTAL CREDITS</th>
+                    </tr>
+                    <tr>
+                        <td>{{ this.SGPA  }}</td>
+                        <td>{{ this.Backlogs  }}</td>
+                        <td>{{ this.CreditsEarned  }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        {{/unless}}
+    {{/each}}
+
+    <!-- Display Total CGPA and Total Backlogs -->
+    {{#if results.Total}}
+    <table class="table table-dark table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>TOTAL CGPA</th>
+                <th>TOTAL BACKLOGS</th>
+                <th>PERCENTAGE</th>
+            </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td>{{ results.Total.TotalCGPA }}</td>
+            <td>{{ results.Total.TotalBacklogs }}</td>
+            <td>{{ results.Total.TotalPercentage }}</td>
+        </tr>
+        </tbody>
+    </table>
+    
+    {{/if}}
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

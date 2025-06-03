@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Certificate Upload - Sphoorthy Engineering College</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #4cc9f0;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212529;
+            --card-border-radius: 16px;
+            --btn-border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 12px 0;
+        }
+
+        /* Navbar text styling */
+        .navbar h2 {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0;
+            font-size: 1.5rem;
+        }
+
+        .navbar h2 span {
+            font-weight: 400;
+            opacity: 0.9;
+            color: white;
+        }
+
+        .navbar ul li a {
+            color: white !important;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin: 0 5px;
+            padding: 8px 15px !important;
+            border-radius: 8px;
+        }
+
+        .navbar ul li a:hover, .navbar ul li a.active {
+            color: white !important;
+            background-color: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+        }
+
+        .profile-icon {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Dropdown menu styling */
+        .dropdown-menu {
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border: none;
+            padding: 10px;
+            background-color: white;
+        }
+
+        .dropdown-item {
+            border-radius: 8px;
+            padding: 8px 15px;
+            transition: all 0.2s;
+            color: #212529 !important; /* Black text for dropdown items */
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+            transform: translateX(5px);
+            color: #212529 !important; /* Keep text black on hover */
+        }
+
+        .dropdown-item.active {
+            background-color: rgba(67, 97, 238, 0.2);
+            color: #212529 !important; /* Keep text black when active */
+        }
+
+        .container.shadow-lg {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08) !important;
+            padding: 30px;
+            margin-top: 40px;
+            margin-bottom: 40px;
+            max-width: 800px;
+        }
+
+        h2.text-center {
+            color: var(--secondary-color);
+            font-weight: 600;
+            margin-bottom: 30px;
+            position: relative;
+            display: inline-block;
+        }
+
+        h2.text-center:after {
+            content: '';
+            position: absolute;
+            width: 70%;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-color));
+            bottom: -10px;
+            left: 15%;
+            border-radius: 2px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .form-control, .form-select {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+
+        .form-control::placeholder {
+            color: #adb5bd;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
+        }
+
+        .form-section {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-left: 4px solid var(--primary-color);
+        }
+
+        .form-section-title {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            font-size: 1.1rem;
+        }
+
+        .required-field::after {
+            content: '*';
+            color: #dc3545;
+            margin-left: 4px;
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+            margin-bottom: 10px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border: 2px dashed #dee2e6;
+            transition: all 0.3s;
+        }
+
+        .file-upload-wrapper:hover {
+            border-color: var(--primary-color);
+        }
+
+        .file-upload-icon {
+            font-size: 2rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .file-upload-text {
+            margin-bottom: 15px;
+            color: #6c757d;
+        }
+
+        .progress-container {
+            display: none;
+            margin-top: 15px;
+        }
+
+        .progress {
+            height: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <h2><i class="bi bi-building me-2"></i>Sphoorthy Engineering College</h2>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/{{this.Student_id}}/homepage">
+                            <i class="bi bi-house-door me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/{{this.Student_id}}/upload">
+                            <i class="bi bi-upload me-1"></i> Upload
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/{{this.Student_id}}/certificate">
+                            <i class="bi bi-award me-1"></i> Certificate
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="/uploaded_images/{{this.pp}}" alt="Profile" class="profile-icon me-2">
+                            <span>Profile</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="/{{this.Student_id}}/settings">
+                                <i class="bi bi-gear me-2"></i> Settings
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout">
+                                <i class="bi bi-box-arrow-right me-2"></i> Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container shadow-lg">
+        {{#if details}}
+        <div class="text-center mb-4">
+            <h2 class="text-center">Certificate Upload Form</h2>
+            <p class="text-muted">Please fill in the details of your certificate for verification and record-keeping</p>
+        </div>
+
+        <form action="/{{details.Student_id}}/upload" method="POST" enctype="multipart/form-data" id="certificateForm">
+            <!-- Student Information Section -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-person me-2"></i>Student Information</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="stu_id" class="form-label required-field">Student ID</label>
+                        <input type="text" class="form-control" id="stu_id" name="stu_id" value="{{details.Student_id}}" readonly>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="stu_name" class="form-label required-field">Student Name</label>
+                        <input type="text" class="form-control" id="stu_name" name="stu_name" value="{{details.student_name}}" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Course Information Section -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-book me-2"></i>Course Information</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="course_type" class="form-label required-field">Course Type</label>
+                        <select class="form-select" id="course_type" name="course_type" required>
+                            <option value="" selected disabled>Select an option</option>
+                            <option value="ONLINE COURSE">ONLINE COURSE</option>
+                            <option value="VIRTUAL INTERNSHIP">VIRTUAL INTERNSHIP</option>
+                            <option value="INTERNSHIP">INTERNSHIP</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="course_name" class="form-label required-field">Course Name</label>
+                        <input type="text" class="form-control" id="course_name" name="course_name" placeholder="Enter course name" required>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="ppc" class="form-label required-field">Participation Type</label>
+                        <select class="form-select" id="ppc" name="ppc" required>
+                            <option value="" selected disabled>Select an option</option>
+                            <option value="Presented">Presented</option>
+                            <option value="Participated">Participated</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="dateoncertificate" class="form-label">Date on Certificate</label>
+                        <input type="date" class="form-control" id="dateoncertificate" name="dateoncertificate">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Organization Information Section -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-building me-2"></i>Organization Information</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="OrgAgent" class="form-label required-field">Organization/Agent</label>
+                        <input type="text" class="form-control" id="OrgAgent" name="OrgAgent" placeholder="Enter organization name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="fee" class="form-label required-field">Fee Type</label>
+                        <select class="form-select" id="fee" name="fee" required>
+                            <option value="" selected disabled>Select an option</option>
+                            <option value="FREE">FREE</option>
+                            <option value="PAID">PAID</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="weblink" class="form-label">Web Link (Optional)</label>
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-link-45deg"></i></span>
+                        <input type="url" class="form-control" id="weblink" name="weblink" placeholder="https://example.com/certificate">
+                    </div>
+                    <div class="form-text">Enter the URL where this certificate can be verified (if available)</div>
+                </div>
+            </div>
+
+            <!-- Certificate Upload Section -->
+            <div class="form-section">
+                <div class="form-section-title"><i class="bi bi-file-earmark-pdf me-2"></i>Certificate Upload</div>
+                <div class="mb-3">
+                    <label for="certificate" class="form-label required-field">Certificate Name</label>
+                    <input type="text" class="form-control" id="certificate" name="certificate" placeholder="Enter a name for this certificate" required>
+                </div>
+
+                <div class="file-upload-wrapper">
+                    <div class="file-upload-icon">
+                        <i class="bi bi-cloud-arrow-up"></i>
+                    </div>
+                    <div class="file-upload-text">
+                        Drag and drop your certificate file here, or click to browse
+                    </div>
+                    <input type="file" class="form-control" id="file_data" name="file_data" accept=".pdf,.jpg,.jpeg,.png">
+                    <div class="form-text">Accepted formats: PDF, JPG, JPEG, PNG (Max size: 5MB)</div>
+
+                    <div class="progress-container">
+                        <div class="progress">
+                            <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                        </div>
+                        <small class="upload-status text-muted mt-2">Preparing upload...</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-cloud-upload me-2"></i>Submit Certificate
+                </button>
+            </div>
+        </form>
+        {{else}}
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            No student details found. Please contact the administrator.
+        </div>
+        {{/if}}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // File upload preview and validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const fileInput = document.getElementById('file_data');
+            const form = document.getElementById('certificateForm');
+            const progressContainer = document.querySelector('.progress-container');
+            const progressBar = document.querySelector('.progress-bar');
+            const uploadStatus = document.querySelector('.upload-status');
+
+            if (fileInput) {
+                fileInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        // Validate file type
+                        const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+                        if (!validTypes.includes(file.type)) {
+                            alert('Invalid file type. Please upload PDF, JPG, JPEG, or PNG files only.');
+                            this.value = '';
+                            return;
+                        }
+
+                        // Validate file size (5MB max)
+                        if (file.size > 5 * 1024 * 1024) {
+                            alert('File size exceeds 5MB. Please upload a smaller file.');
+                            this.value = '';
+                            return;
+                        }
+
+                        // Show file name
+                        const fileName = file.name;
+                        uploadStatus.textContent = `Selected: ${fileName}`;
+                    }
+                });
+            }
+
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    const requiredFields = form.querySelectorAll('[required]');
+                    let isValid = true;
+
+                    requiredFields.forEach(field => {
+                        if (!field.value.trim()) {
+                            isValid = false;
+                            field.classList.add('is-invalid');
+                        } else {
+                            field.classList.remove('is-invalid');
+                        }
+                    });
+
+                    if (!isValid) {
+                        e.preventDefault();
+                        alert('Please fill in all required fields.');
+                        return;
+                    }
+
+                    // Show upload progress animation
+                    if (fileInput.files.length > 0) {
+                        progressContainer.style.display = 'block';
+
+                        // Sim

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Settings - CMS</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4361ee;
+            --secondary-color: #3a0ca3;
+            --accent-color: #4cc9f0;
+            --light-bg: #f8f9fa;
+            --dark-bg: #212529;
+            --card-border-radius: 16px;
+            --btn-border-radius: 8px;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--light-bg);
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            padding: 12px 0;
+        }
+
+        /* Navbar text styling */
+        .navbar h2 {
+            color: white;
+            font-weight: 600;
+            margin-bottom: 0;
+            font-size: 1.5rem;
+        }
+
+        .navbar h2 span {
+            font-weight: 400;
+            opacity: 0.9;
+            color: white;
+        }
+
+        .navbar ul li a {
+            color: white !important;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin: 0 5px;
+            padding: 8px 15px !important;
+            border-radius: 8px;
+        }
+
+        .navbar ul li a:hover, .navbar ul li a.active {
+            color: white !important;
+            background-color: rgba(255,255,255,0.15);
+            transform: translateY(-2px);
+        }
+
+        .profile-icon {
+            width: 36px !important;
+            height: 36px !important;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* Dropdown menu styling */
+        .dropdown-menu {
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            border: none;
+            padding: 10px;
+            background-color: white;
+        }
+
+        .dropdown-item {
+            border-radius: 8px;
+            padding: 8px 15px;
+            transition: all 0.2s;
+            color: #212529 !important; /* Black text for dropdown items */
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(67, 97, 238, 0.1);
+            transform: translateX(5px);
+            color: #212529 !important; /* Keep text black on hover */
+        }
+
+        .dropdown-item.active {
+            background-color: rgba(67, 97, 238, 0.2);
+            color: #212529 !important; /* Keep text black when active */
+        }
+
+        .settings-container {
+            background-color: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 30px;
+            margin-top: 40px;
+            margin-bottom: 40px;
+        }
+
+        .profile-picture {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            margin: 0 auto 20px;
+            display: block;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .profile-picture:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .profile-info {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .info-item {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .info-item:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #6c757d;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 1.1rem;
+            color: #212529;
+            font-weight: 500;
+        }
+
+        .update-btn {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            transition: all 0.3s;
+            color: white;
+            width: 100%;
+        }
+
+        .update-btn:hover {
+            background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            border: none;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-bottom: none;
+            padding: 15px 20px;
+        }
+
+        .modal-body {
+            padding: 25px;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+            margin-bottom: 8px;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            padding: 12px 15px;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+    </style>
+</head>
+<body>
+    {{#each result}}
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-4">
+            <h2><i class="bi bi-mortarboard me-2"></i>Student <span>{{this.Student_id}}</span></h2>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/{{this.Student_id}}/homepage">
+                            <i class="bi bi-house-door me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/{{this.Student_id}}/upload">
+                            <i class="bi bi-upload me-1"></i> Upload
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/{{this.Student_id}}/certificate">
+                            <i class="bi bi-award me-1"></i> Certificate
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <img src="/uploaded_images/{{#if this.pp}}{{this.pp}}{{else}}profile_alt.jpg{{/if}}" alt="Profile" class="profile-icon me-2">
+                            <span>Profile</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item active" href="/{{this.Student_id}}/settings">
+                                <i class="bi bi-gear me-2"></i> Settings
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="/logout">
+                                <i class="bi bi-box-arrow-right me-2"></i> Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-10 mx-auto">
+                <div class="settings-container shadow">
+                    <div class="text-center mb-4">
+                        <h2>Account Settings</h2>
+                        <p class="text-muted">Manage your profile information</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-4 mb-md-0">
+                            <img src="/uploaded_images/{{#if this.pp}}{{this.pp}}{{else}}profile_alt.jpg{{/if}}" alt="Profile Picture" class="profile-picture" id="profileImage">
+                            <div class="mt-3">
+                                <button class="btn btn-outline-primary btn-sm" id="changePhotoBtn">
+                                    <i class="bi bi-camera me-1"></i> Change Photo
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-md-8">
+                            <div class="profile-info">
+                                <div class="info-item">
+                                    <div class="info-label">Student ID</div>
+                                    <div class="info-value">{{this.Student_id}}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Full Name</div>
+                                    <div class="info-value">{{this.student_name}}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Email Address</div>
+                                    <div class="info-value">{{this.Email}}</div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Phone Number</div>
+                                    <div class="info-value">{{this.Phone_number}}</div>
+                                </div>
+                            </div>
+
+                            <button class="update-btn" data-bs-toggle="modal" data-bs-target="#updateModal">
+                                <i class="bi bi-pencil-square me-2"></i> Edit Profile
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Update Details Modal -->
+    <div class="modal fade" id="updateModal" tabindex="-1" aria-labelledby="updateModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="updateModalLabel">Update Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/{{this.Student_id}}/update_details" method="POST" enctype="multipart/form-data">
+                        <input type="hidden" name="student_id" value="{{this.Student_id}}">
+
+                        <!-- Profile Picture Selection -->
+                        <div class="mb-4 text-center">
+                            <label class="form-label d-block">Profile Picture</label>
+                            <div class="position-relative d-inline-block">
+                                <img src="/uploaded_images/{{#if this.pp}}{{this.pp}}{{else}}profile_alt.jpg{{/if}}" id="profilePreview" alt="Profile Picture"
+                                     class="rounded-circle border" style="width: 120px; height: 120px; object-fit: cover; cursor: pointer;">
+                                <div class="position-absolute bottom-0 end-0 bg-primary text-white rounded-circle p-2"
+                                     style="cursor: pointer;" onclick="document.getElementById('profile_pic').click()">
+                                    <i class="bi bi-camera"></i>
+                                </div>
+                                <input type="file" class="form-control d-none" id="profile_pic" name="profile_pic" accept="image/*">
+                            </div>
+                            <small class="text-muted d-block mt-2">Click on the image to change your profile picture</small>
+                        </div>
+
+                        <!-- Name -->
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Full Name</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{this.student_name}}">
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" value="{{this.Email}}">
+                        </div>
+
+                        <!-- Mobile No -->
+                        <div class="mb-3">
+                            <label for="mobile" class="form-label">Phone Number</label>
+                            <input type="text" class="form-control" id="mobile" name="mobile" value="{{this.Phone_number}}">
+                        </div>
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-circle me-2"></i> Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{/each}}
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        // When user clicks on profile image in the main page
+        document.getElementById('profileImage').addEventListener('click', function() {
+            document.getElementById('changePhotoBtn').click();
+        });
+
+        // When user clicks on change photo button
+        document.getElementById('changePhotoBtn').addEventListener('click', function() {
+            document.querySelector('[data-bs-target="#updateModal"]').click();
+        });
+
+        // When user clicks on profile image in the modal
+        document.getElementById('profilePreview').addEventListener('click', function() {
+            document.getElementById('profile_pic').click();
+        });
+
+        // Update image preview when a new file is selected
+        document.getElementById('profile_pic').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profilePreview').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+</body>
+</html>

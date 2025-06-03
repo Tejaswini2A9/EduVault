@@ -1,0 +1,508 @@
+// This is a backup of the original index.js file
+// All functionality has been moved to the proper MVC structure
+
+const express = require('express');
+const mysql = require('mysql');
+const multer = require('multer');
+const path = require('path');
+const session = require('express-session');
+const crypto = require('crypto');
+const fs = require('fs');
+const util = require('util');
+const axios = require("axios");
+const hbs = require("hbs");
+const cheerio = require('cheerio');
+const bcrypt = require('bcrypt');
+
+
+const app = express();
+
+// Multer storage configuration
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        // Check if the file is an image based on mime type
+        if (file.mimetype.startsWith('image')) {
+            cb(null, path.join(__dirname, 'public', 'uploaded_images')); // Image directory
+        } else {
+            cb(null, path.join(__dirname, 'public', 'uploaded_files')); // Other files directory
+        }
+    },
+    filename: (req, file, cb) => {
+        // Create a unique file name using timestamp and random number
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+    }
+});
+
+// Use multer with the storage configuration
+const upload = multer({ storage: storage });
+
+// Database pool
+const pool = mysql.createPool({
+    connectionLimit: 10,
+    host: 'localhost',
+    user: 'root',
+    password: '',
+    database: 'cms',
+    connectTimeout: 60000,
+    maxAllowedPacket: 164 * 1024 * 1024,
+});
+
+const query = util.promisify(pool.query).bind(pool);
+
+// Session setup
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('public'));
+app.use(session({ secret: 'your_secret_key', resave: false, saveUninitialized: true }));
+
+app.set('view engine', 'hbs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Generate unique file ID
+async function generateUniqueFileId(rollNumber) {
+    const timestamp = Date.now().toString();
+    const rawString = `${rollNumber}_${timestamp}`;
+    const hash = crypto.createHash('sha256').update(rawString).digest('hex');
+    return `${rollNumber}_${hash.substring(0, 10)}`;
+}
+
+async function passwordgen(password) {
+    const saltRounds = 10;
+    try {
+        const hash = await bcrypt.hash(password, saltRounds);  // Use await to hash the password
+        return hash;  // Return the hashed password
+    } catch (err) {
+        console.error(err);
+        throw new Error('Error while hashing the password');
+    }
+}
+
+async function verifypass(password, hashedPassword) {
+    console.log(password);
+    console.log(hashedPassword);
+    try {
+        if (!password || !hashedPassword) {
+            return false;
+        }
+        const result =  await bcrypt.compare(password, hashedPassword);
+        return result;
+    } catch (err) {
+        console.error(err);
+        return false;
+    }
+}
+
+
+
+// Authentication middleware
+function isAuthenticated(req, res, next) {
+    if (req.session && req.session.username) {
+        return next();
+    }
+    res.redirect('/login');
+}
+// Server start
+app.listen(81, () => {
+    console.log('Server is running on port 81');
+});
+
+
+// Routes
+app.get('/', (req, res) => res.render('landpage'));
+
+app.get('/login', (req, res) => res.render('login'));
+
+app.get('/register', (req, res) => res.render('registration'));
+
+app.post('/registerdata', async (req,res)=>{
+    const htno = req.body.username;
+    const name = req.body.fullname;
+    const email = req.body.email;
+    const pass = req.body.password;
+    const mobile = req.body.mobileno;
+    //const encpassword = await passwordgen(pass);
+    pool.query('insert into stu_details( Student_id, student_name, Email, Password, Phone_number ) values(?, ?, ?, ?, ?)', [htno, name, email, pass, mobile], (err)=>{
+        if (err){
+            console.log(err);
+        };
+        res.redirect('/login');
+    })
+});
+
+
+
+app.post('/login', async (req, res) => {
+    const { un, pass } = req.body;
+    try {
+        const result = await query('SELECT * FROM login WHERE username = ?', [un]);
+
+        if (result.length > 0) {
+            const user = result[0];
+            if (!user.password) {
+                res.render('login', { message: 'Password not found' });
+                return;
+            }
+
+            //const match = await verifypass(pass, user.password);
+            if (pass == user.password) {
+                req.session.username = un;
+                res.redirect(`/${un}/homepage`);
+            } else {
+                res.render('login', { message: 'Incorrect password' });
+            }
+        } else {
+            res.render('login', { message: 'User not found' });
+        }
+    } catch (err) {
+        res.status(500).send('An error occurred while logging in.');
+    }
+});
+
+hbs.registerHelper('json', function(context) {
+    return JSON.stringify(context);
+});
+
+
+app.get('/:username/homepage', isAuthenticated, async (req, res) => {
+    const htno = req.params.username;
+    try {
+        if (htno === "Admin") {
+            const students = await query('SELECT * FROM stu_details');
+            res.render('Admin_homepage', { result: students });
+        } else {
+            const student = await query('SELECT * FROM stu_details WHERE Student_id = ?', [htno]);
+
+            // Get month-wise present and absent counts for the current student
+            const attendanceData = await query(`
+                SELECT 
+                    MONTH(attendance_date) AS month,
+                    SUM(CASE WHEN status = 'present' THEN 1 ELSE 0 END) AS present_count,
+                    SUM(CASE WHEN status = 'absent' THEN 1 ELSE 0 END) AS absent_count
+                FROM attendance
+                WHERE htno = ?
+                GROUP BY MONTH(attendance_date)
+                ORDER BY MONTH(attendance_date)
+            `, [htno]);
+
+            // Month names
+            const monthNames = [
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
+
+            // Initialize the attendance result
+            let attresult = {};
+            for (let i = 0; i < 12; i++) {
+                attresult[monthNames[i]] = {
+                    present_count: 0,
+                    absent_count: 0
+                };
+            }
+
+            // Populate the arrays with the attendance data
+            attendanceData.forEach(record => {
+                const monthIndex = record.month - 1; // Convert SQL month (1-based) to JS index (0-based)
+                attresult[monthNames[monthIndex]].present_count = record.present_count;
+                attresult[monthNames[monthIndex]].absent_count = record.absent_count;
+            });
+            // Send the data to the Handlebars view
+            res.render('student_homepage', {
+                std_data: student,
+                att_results: JSON.stringify(attresult)
+            });
+        }
+    } catch (err) {
+        console.error('Error fetching data:', err);
+        res.status(500).send('Error fetching data. Retry after some time.');
+    }
+});
+
+
+app.get('/:htno/settings', isAuthenticated, async (req, res) => {
+    const htno = req.params.htno;
+    try {
+        const result = await query('SELECT * FROM stu_details WHERE Student_id = ?', [htno]);
+        res.render('settings', { result: result });
+    } catch (err) {
+        res.status(500).send('Error fetching student details.');
+    }
+});
+
+app.get('/:htno/update', isAuthenticated, async (req, res) => {
+    const htno = req.params.htno;
+    try {
+        const result = await query('SELECT * FROM stu_details WHERE student_id = ?', [htno]);
+        res.render('settings', { result: result });
+    } catch (err) {
+        res.status(500).send('Error fetching student details.');
+    }
+});
+
+app.get('/:htno/certificate', isAuthenticated, async (req, res) => {
+    const htno = req.params.htno;
+    try {
+        const std_data = await query('SELECT * FROM stu_details WHERE Student_id = ?', [htno]);
+        const result = await query('SELECT * FROM certificate_details WHERE Stu_id = ?', [htno]);
+        res.render('student_certipage', { std_data: std_data, files: result });
+    } catch (err) {
+        res.status(500).send('Error fetching student details.');
+    }
+});
+
+app.post('/:htno/update_details', upload.single('file'), isAuthenticated, async (req, res) => {
+    const htno = req.params.htno;
+
+    if (!htno) {
+        return res.status(400).send('Student ID is missing.');
+    }
+
+    let profilePicPath = req.file ? req.file.path : "profile_alt.jpg";
+    console.log('Profile picture path:', profilePicPath);
+
+    try {
+        await query('UPDATE stu_details SET pp = ? WHERE Student_id = ?', [profilePicPath, htno]);
+
+        const { name, email, mobile } = req.body;
+        await query('UPDATE stu_details SET student_name = ?, Email = ?, Phone_number = ? WHERE Student_id = ?', [name, email, mobile, htno]);
+
+        res.redirect(`/${htno}/homepage`);
+    } catch (err) {
+        console.error('Error updating profile:', err);
+        res.status(500).send('Failed to update profile.');
+    }
+});
+
+
+app.get('/:htno/upload', isAuthenticated, async (req, res) => {
+    const htno = req.params.htno;
+    const student = await query('SELECT * FROM stu_details WHERE Student_id = ?', [htno]);
+    try {
+        res.render('upload', { details : student});
+    } catch (err) {
+        res.status(500).send('Error fetching student details.');
+    }
+});
+
+app.post('/:htno/upload', upload.array('files', 10), async (req, res) => {
+    const htno = req.params.htno;
+    console.log('Received HTNO:', htno);
+    console.log('Files received:', req.files);
+    console.log('Request body:', req.body);
+
+    try {
+        if (!req.files || req.files.length === 0) {
+            throw new Error('No files uploaded.');
+        }
+
+        for (const file of req.files) {
+            const fileName = sanitizeFileName(file.originalname);
+            console.log('Processing file:', fileName);
+
+            const filePath = file.path;
+            const fileData = fs.readFileSync(filePath);
+            await insertFileWithRetry(
+                htno,
+                req.body.Student_name,
+                req.body.course_type,
+                req.body.course_name,
+                req.body.ppc,
+                fileData,
+                req.body.dateoncertificate,
+                req.body.OrgAgent,
+                req.body.weblink,
+                req.body.Fee,
+            );
+        }
+
+        res.redirect(`/${htno}/homepage`);
+    } catch (error) {
+        console.error('Upload error:', error.message);
+        res.status(500).send(`Upload failed: ${error.message}`);
+    }
+});
+
+async function insertFileWithRetry(Student_id, student_name, course_type, course_name, ppc, fileData, dateoncertificate, OrgAgent, weblink, Fee, retries = 3) {
+    try {
+        const fileId = await generateUniqueFileId(Student_id);
+
+        await query(
+            'INSERT INTO certificate_details (Stu_id, student_name, course_type, course_name, ppc, file_id, dateoncertificate, file_data, OrgAgent, weblink, Fee) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [Student_id, student_name, course_type, course_name, ppc, fileId, dateoncertificate, fileData, OrgAgent, weblink, Fee]
+        );
+
+        console.log(`Record successfully inserted for Student ID: ${Student_id}`);
+    } catch (err) {
+        if (retries > 0) {
+            console.warn(`Retrying... (${retries} attempts left)`);
+            await insertFileWithRetry(Student_id, student_name, course_type, course_name, ppc, fileData, dateoncertificate, OrgAgent, weblink, Fee, retries - 1);
+        } else {
+            console.error(`Failed to insert record for ${Student_id} after retries:`, err);
+            throw new Error(`Database insertion failed for Student ID: ${Student_id}`);
+        }
+    }
+}
+
+
+app.get('/:htno/delete-file/:fileId', isAuthenticated, async (req, res) => {
+    const { htno, fileId } = req.params;
+
+    try {
+        // Fetch file details from the database
+        const result = await query('SELECT course_name FROM certificate_details WHERE Stu_id = ? AND file_id = ?', [htno, fileId]);
+
+        if (result.length === 0) {
+            return res.status(404).send('File not found.');
+        }
+
+        const fileName = result[0].course_name;
+        const filePath = path.join(__dirname, 'public', 'uploaded_files', fileName);
+
+        // Delete file from the database
+        await query('DELETE FROM certificate_details WHERE file_id = ?', [fileId]);
+
+        // Delete file from the file system if it exists
+        if (fs.existsSync(filePath)) {
+            await unlinkAsync(filePath);
+        }
+
+        res.redirect(`/${htno}/homepage`); 
+    } catch (err) {
+        console.error('Error deleting file:', err);
+        res.status(500).send('Error deleting file.');
+    }
+});
+
+// File download route
+app.get('/download/:fileId', isAuthenticated, (req, res) => {
+    const fileId = req.params.fileId;
+
+    // Query to get the file data based on the file ID
+    pool.query('SELECT course_name, file_data FROM certificate_details WHERE file_id = ?', [fileId], (err, result) => {
+        if (err) {
+            console.error('Error querying database:', err);
+            return res.status(500).send('Server error.');
+        }
+
+        if (result.length > 0) {
+            const fileName = result[0].course_name;  // File name stored in the database
+            const fileData = result[0].file_data;   // Binary data (BLOB)
+
+            // Set the content type and content disposition headers for the file download
+            res.setHeader('Content-Disposition', 'attachment; filename="' + fileName + '"');
+            res.setHeader('Content-Type', 'application/pdf');  // Adjust MIME type as necessary
+
+            // Send the file data as a download
+            res.send(fileData);
+        } else {
+            res.status(404).send('File not found.');
+        }
+    });
+});
+
+
+
+// Utility function to sanitize file names
+function sanitizeFileName(fileName) {
+    return fileName.replace(/[^\w\s.-]/g, '_');
+}
+
+
+
+
+//===================jntuh site for here=============================
+
+
+
+hbs.registerHelper('eq', function (a, b) {
+    return a === b;
+});
+
+
+// Route to process form submission and fetch results
+async function jntuhresults(htno) {
+    console.log(htno);
+    let results;
+    let responseData = {};  // This will hold all the data to be returned
+
+    try {
+        const url = `https://jntuhresults.vercel.app/api/redisdata?htno=${htno}ALL`;
+        let response = await axios.get(url);
+        if (response.status === 200 && response.data) {
+            results = response['data'];
+          } else {
+            console.log("error occured not results found in database");
+          }
+        
+
+        let overallTotalCredits = 0;
+        let overallTotalGradePoints = 0;
+        let overallBacklogs = 0;
+        let status;
+
+        // Calculate SGPA, CGPA, and Backlogs for each semester
+        for (const semester in results.Results) {
+            if (semester !== "Total" && !semester.startsWith("Semester: Total")) {
+                let semesterData = results.Results[semester];
+                let totalCredits = 0;
+                let earnedCredits = 0;
+                let totalGradePoints = 0;
+                let backlogs = 0;
+
+                for (const subjectCode in semesterData) {
+                    let subject = semesterData[subjectCode];
+                    if (subject.subject_grade) {
+                        let gradePoints = 0;
+                        switch (subject.subject_grade) {
+                            case 'O': gradePoints = 10; break;
+                            case 'A+': gradePoints = 9; break;
+                            case 'A': gradePoints = 8; break;
+                            case 'B+': gradePoints = 7; break;
+                            case 'B': gradePoints = 6; break;
+                            case 'C': gradePoints = 5; break;
+                            case 'F': gradePoints = 0; break;
+                        }
+                        let subjectCredits = parseFloat(subject.subject_credits);
+                        totalCredits += subjectCredits;
+                        totalGradePoints += gradePoints * subjectCredits;
+                        if (subject.subject_grade !== 'F') {
+                            earnedCredits += subjectCredits;
+                        } else {
+                            backlogs++;
+                        }
+                    }
+                }
+                semesterData.SGPA = (totalGradePoints / totalCredits).toFixed(2);
+                semesterData.CreditsEarned = earnedCredits;
+                semesterData.Backlogs = backlogs;
+
+                overallTotalCredits += totalCredits;
+                overallTotalGradePoints += totalGradePoints;
+                overallBacklogs += backlogs;
+                if(overallBacklogs > 0){
+                    status = "FAIL";
+                }
+                else{
+                    status = "PASS";
+                }
+            }
+        }
+
+        // Calculate overall CGPA
+        const cgpa = (overallTotalGradePoints / overallTotalCredits).toFixed(2);
+        const percentage = (cgpa * 9.5).toFixed(2);
+        results.Total = {
+            TotalCGPA: cgpa,
+            TotalBacklogs: overallBacklogs,
+            TotalPercentage: percentage,
+            TotalCredits: overallTotalCredits,
+            current_status: status
+        };
+
+        // Return the structured data in JSON format
+        return results;
+
+    } catch (error) {
+        console.error("Error fetching results:", error);
+        return { error: "Error fetching results" };  // Return error if fetching fails
+    }
+}

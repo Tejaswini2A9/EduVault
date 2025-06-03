@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EduVault</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        .profile-icon {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .navbar {
+            color: #fff;
+        }
+
+        .nav-link {
+            color: #fff;
+        }
+
+        .dropdown-menu {
+            background-color: #343a40;
+        }
+
+        .dropdown-item {
+            color: #fff;
+        }
+
+        .dropdown-item:hover {
+            background-color: #495057;
+        }
+
+        .navbar h2 {
+            margin: 0;
+            flex-grow: 1;
+        }
+    </style>
+</head>
+
+<body style="overflow: hidden;">
+    {{#each results}}
+    <nav class="navbar bg-dark border-bottom border-body p-3 d-flex align-items-center" data-bs-theme="dark">
+        <h2>Welcome <span>{{this.username}}</span></h2>
+        <ul class="nav">
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="/{{this.htno}}/homepage">
+                    <i class="bi bi-house-door me-1"></i> Home
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="/{{this.htno}}/upload">
+                    <i class="bi bi-upload me-1"></i> Upload
+                </a>
+            </li>
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="/uploaded_images/{{#if this.pp}}{{this.pp}}{{else}}profile_alt.jpg{{/if}}" alt="Profile" class="profile-icon">
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="/{{this.htno}}/settings">
+                        <i class="bi bi-gear me-2"></i> Settings
+                    </a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="/logout">
+                        <i class="bi bi-box-arrow-right me-2"></i> Logout
+                    </a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    {{/each}}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+</body>
+
+</html>
