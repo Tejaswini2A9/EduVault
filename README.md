@@ -25,7 +25,7 @@ A comprehensive system for managing student certificates, academic records, and 
 1. Clone the repository:
 
    ```
-   git clone https://github.com/yourusername/eduvault.git
+   git clone https://github.com/Tejaswini2A9/eduvault.git
    cd eduvault
    ```
 
